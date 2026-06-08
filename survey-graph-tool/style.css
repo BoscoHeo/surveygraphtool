@@ -522,6 +522,9 @@ body {
 .bp-check-status.yet {
     color: var(--text-muted);
 }
+.bp-check-status.wrong {
+    color: #d63031;
+}
 
 /* ===== Pictograph Builder ===== */
 .bp-picto-settings { display: flex; align-items: center; gap: 12px; margin-bottom: 16px; flex-wrap: wrap; font-size: 14px; font-weight: 600; }

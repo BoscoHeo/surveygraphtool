@@ -160,6 +160,9 @@ const Builder = {
         const s = this.survey;
         const total = s.votes.reduce((a,b)=>a+b,0);
         
+        // 제출 상태 초기화
+        this.isSubmitted = false;
+        
         // 1. 실제 정답 비율 및 누적 정답 비율 계산
         const answers = s.options.map((_, i) => total > 0 ? (s.votes[i]/total*100) : 0);
         const cumAnswers = [];
@@ -178,7 +181,7 @@ const Builder = {
         }
 
         // 3. UI 뼈대 생성
-        let h = `<div class="bb-hint" id="bp-hint">📌 구분선 핸들을 드래그하여 각 항목의 비율을 맞춰보세요! (정답에 가까워지면 자석처럼 붙습니다 🧲)</div>`;
+        let h = `<div class="bb-hint" id="bp-hint">📌 구분선 핸들을 드래그하여 각 항목의 비율을 맞춰보세요!</div>`;
         
         if (type === 'band') {
             h += `<div class="bp-band-interactive" id="band-container">`;
@@ -202,8 +205,9 @@ const Builder = {
             h += `</div>`;
         }
 
-        // 실시간 비교 체크리스트
+        // 실시간 비교 체크리스트 & 제출/다시 그려보기 버튼 영역
         h += `<div class="bp-check-list" id="bp-check-list"></div>`;
+        h += `<div class="bp-actions" id="bp-actions" style="margin-top: 20px; display: flex; justify-content: center; gap: 10px;"></div>`;
         c.innerHTML = h;
 
         const self = this;
@@ -294,39 +298,77 @@ const Builder = {
                     const isOk = Math.abs(studentPct - targetPct) < 0.2;
                     if (!isOk) allCorrect = false;
 
-                    checkHtml += `
-                        <div class="bp-check-item">
-                            <span>
-                                <span style="display:inline-block;width:12px;height:12px;border-radius:3px;background:${self.colors[i%8]};margin-right:8px;vertical-align:middle;"></span>
-                                <strong>${opt}</strong>
-                            </span>
-                            <span class="bp-check-status ${isOk ? 'ok' : 'yet'}">
-                                ${isOk ? `🧲 ${studentPct.toFixed(1)}% (일치)` : `✍️ ${studentPct.toFixed(1)}% (목표: ${targetPct.toFixed(1)}%)`}
-                            </span>
-                        </div>
-                    `;
+                    if (!self.isSubmitted) {
+                        // 제출 전에는 오직 현재 학생의 비율만 노출
+                        checkHtml += `
+                            <div class="bp-check-item">
+                                <span>
+                                    <span style="display:inline-block;width:12px;height:12px;border-radius:3px;background:${self.colors[i%8]};margin-right:8px;vertical-align:middle;"></span>
+                                    <strong>${opt}</strong>
+                                </span>
+                                <span class="bp-check-status yet">
+                                    ✍️ ${studentPct.toFixed(1)}%
+                                </span>
+                            </div>
+                        `;
+                    } else {
+                        // 제출 후에는 채점 결과와 목표(정답) 비율 공개
+                        checkHtml += `
+                            <div class="bp-check-item">
+                                <span>
+                                    <span style="display:inline-block;width:12px;height:12px;border-radius:3px;background:${self.colors[i%8]};margin-right:8px;vertical-align:middle;"></span>
+                                    <strong>${opt}</strong>
+                                </span>
+                                <span class="bp-check-status ${isOk ? 'ok' : 'wrong'}">
+                                    ${isOk ? `✅ ${studentPct.toFixed(1)}% (정답!)` : `❌ ${studentPct.toFixed(1)}% (정답: ${targetPct.toFixed(1)}%)`}
+                                </span>
+                            </div>
+                        `;
+                    }
                 });
                 checklist.innerHTML = checkHtml;
 
-                // 3) 핸들의 snapped 클래스 업데이트
+                // 3) 핸들의 snapped 클래스 업데이트 (제출한 후에만 초록색 불이 켜지게 함)
                 const handles = c.querySelectorAll(type === 'band' ? '.band-handle' : '.pie-handle');
                 handles.forEach((hd, i) => {
                     const isSnapped = Math.abs(self.values[i] - cumAnswers[i]) < 0.05;
-                    hd.classList.toggle('snapped', isSnapped);
+                    hd.classList.toggle('snapped', isSnapped && self.isSubmitted);
                 });
 
-                // 4) 전체 성공 피드백 연출
+                // 4) 전체 성공 피드백 연출 및 버튼 구성
                 const hint = c.querySelector('#bp-hint');
-                if (allCorrect) {
-                    hint.innerHTML = `🏆 <strong>축하합니다! 모든 비율을 완벽하게 맞췄습니다!</strong> 🏆`;
-                    hint.style.background = `rgba(0, 184, 148, 0.1)`;
-                    hint.style.borderColor = `#00B894`;
-                    hint.style.color = `#00B894`;
-                } else {
-                    hint.innerHTML = `📌 구분선 핸들을 드래그하여 각 항목의 비율을 맞춰보세요! (정답에 가까워지면 자석처럼 붙습니다 🧲)`;
+                const actionsContainer = c.querySelector('#bp-actions');
+                
+                if (!self.isSubmitted) {
+                    hint.innerHTML = `📌 구분선 핸들을 드래그하여 각 항목의 비율을 맞춰보세요!`;
                     hint.style.background = `rgba(108, 92, 231, 0.05)`;
                     hint.style.borderColor = `rgba(108, 92, 231, 0.15)`;
                     hint.style.color = `var(--text-primary)`;
+                    
+                    if (actionsContainer) {
+                        actionsContainer.innerHTML = `<button class="btn btn-primary btn-lg" id="btn-submit-graph">📐 내가 그린 그래프 제출하기</button>`;
+                    }
+                } else {
+                    if (allCorrect) {
+                        hint.innerHTML = `🏆 <strong>축하합니다! 모든 비율을 완벽하게 맞췄습니다!</strong> 🏆`;
+                        hint.style.background = `rgba(0, 184, 148, 0.1)`;
+                        hint.style.borderColor = `#00B894`;
+                        hint.style.color = `#00B894`;
+                        
+                        if (actionsContainer) {
+                            // 다 맞은 경우 다시 그려볼 수 있도록 버튼 추가 제공 (선택 사항)
+                            actionsContainer.innerHTML = `<button class="btn btn-secondary btn-lg" id="btn-retry-graph">🔄 다시 그려보기</button>`;
+                        }
+                    } else {
+                        hint.innerHTML = `❌ <strong>틀린 부분이 있습니다. 비율을 계산해 보고 다시 수정해 보세요!</strong>`;
+                        hint.style.background = `rgba(214, 48, 49, 0.1)`;
+                        hint.style.borderColor = `#D63031`;
+                        hint.style.color = `#D63031`;
+                        
+                        if (actionsContainer) {
+                            actionsContainer.innerHTML = `<button class="btn btn-secondary btn-lg" id="btn-retry-graph">🔄 다시 그려보기</button>`;
+                        }
+                    }
                 }
             }
         };
@@ -336,6 +378,7 @@ const Builder = {
         let dragIdx = -1;
 
         const onStart = (e) => {
+            if (self.isSubmitted) return; // 제출된 상태에서는 드래그 금지
             const handle = e.target.closest(type === 'band' ? '.band-handle' : '.pie-handle');
             if (handle) {
                 isDragging = true;
@@ -346,6 +389,7 @@ const Builder = {
         };
 
         const onMove = (e) => {
+            if (self.isSubmitted) return; // 제출된 상태에서는 드래그 금지
             if (!isDragging || dragIdx === -1) return;
             let pct = getPctFromEvent(e);
 
@@ -357,7 +401,7 @@ const Builder = {
             if (pct < prevVal + margin) pct = prevVal + margin;
             if (pct > nextVal - margin) pct = nextVal - margin;
 
-            // 자석 스냅(Snap) 효과
+            // 자석 스냅(Snap) 효과 (내부적으로는 여전히 작동하여 조작을 편리하게 도움)
             const targetCumPct = cumAnswers[dragIdx];
             if (Math.abs(pct - targetCumPct) < 2.0) { // 오차 2% 이내로 접근 시 자석 효과
                 if (targetCumPct >= prevVal + margin && targetCumPct <= nextVal - margin) {
@@ -377,6 +421,17 @@ const Builder = {
                 dragIdx = -1;
             }
         };
+
+        // 제출 및 다시시도 버튼 클릭 리스너 (위임)
+        c.addEventListener('click', (e) => {
+            if (e.target.id === 'btn-submit-graph') {
+                self.isSubmitted = true;
+                updateUI();
+            } else if (e.target.id === 'btn-retry-graph') {
+                self.isSubmitted = false;
+                updateUI();
+            }
+        });
 
         container.addEventListener('mousedown', onStart);
         container.addEventListener('touchstart', onStart, {passive: false});
