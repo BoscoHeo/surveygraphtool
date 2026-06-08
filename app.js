@@ -328,6 +328,7 @@ function switchMode(mode) {
         $('#auto-display').style.display = 'block';
         switchGraphAuto(APP.currentGraphType);
     }
+    if (typeof updateDataTableBlur === 'function') updateDataTableBlur();
 }
 
 /* ===== Graphs ===== */
@@ -360,6 +361,24 @@ function renderDataTable(tbodyId='data-table-body', totalId='data-total') {
         const el = $(`#${totalId}`);
         if (el) el.innerHTML = `<strong>${total}</strong>`;
     }
+    updateDataTableBlur();
+}
+
+function updateDataTableBlur() {
+    const isBuild = APP.mode === 'build';
+    const isSubmitted = typeof Builder !== 'undefined' ? !!Builder.isSubmitted : false;
+    
+    document.querySelectorAll('#data-table-body tr td:nth-child(3)').forEach(td => {
+        if (isBuild && !isSubmitted) {
+            td.style.filter = 'blur(5px)';
+            td.style.userSelect = 'none';
+            td.title = '제출 후 공개됩니다';
+        } else {
+            td.style.filter = 'none';
+            td.style.userSelect = 'auto';
+            td.title = '';
+        }
+    });
 }
 
 function switchGraph(type) {
