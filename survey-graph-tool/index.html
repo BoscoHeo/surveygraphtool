@@ -1,0 +1,347 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>📊 우리반 설문조사 그래프 만들기</title>
+    <meta name="description" content="6학년 수학 여러가지 그래프 단원 - 설문조사 및 그래프 제작 도구">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.2.0/dist/chartjs-plugin-datalabels.min.js"></script>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <!-- ==================== 헤더 ==================== -->
+    <header id="main-header">
+        <div class="header-inner">
+            <div class="logo" id="logo-btn">
+                <span class="logo-icon">📊</span>
+                <h1>우리반 그래프 만들기</h1>
+            </div>
+            <nav class="header-nav">
+                <button class="nav-btn" data-page="home" id="nav-home">
+                    <span class="nav-icon">🏠</span>
+                    <span class="nav-text">홈</span>
+                </button>
+                <button class="nav-btn" data-page="create" id="nav-create">
+                    <span class="nav-icon">✏️</span>
+                    <span class="nav-text">만들기</span>
+                </button>
+                <button class="nav-btn" data-page="mysurveys" id="nav-mysurveys">
+                    <span class="nav-icon">📋</span>
+                    <span class="nav-text">내 설문</span>
+                </button>
+            </nav>
+        </div>
+    </header>
+
+    <!-- ==================== 메인 컨텐츠 ==================== -->
+    <main id="main-content">
+
+        <!-- ========== 홈 페이지 ========== -->
+        <section id="page-home" class="page active">
+            <div class="hero">
+                <div class="hero-content">
+                    <div class="hero-badge">6학년 수학 · 여러가지 그래프</div>
+                    <h2 class="hero-title">
+                        설문조사하고<br>
+                        <span class="gradient-text">멋진 그래프</span>를 만들어 보자! 📈
+                    </h2>
+                    <p class="hero-desc">
+                        직접 설문 주제를 정하고, 친구들의 답을 모아서,<br>
+                        막대그래프·원그래프·띠그래프·꺾은선그래프·그림그래프까지!
+                    </p>
+                    <div class="hero-actions">
+                        <button class="btn btn-primary btn-lg" id="btn-start-create">
+                            <span>✏️ 설문 만들기</span>
+                        </button>
+                        <button class="btn btn-secondary btn-lg" id="btn-load-file">
+                            <span>📂 파일 불러오기</span>
+                        </button>
+                        <input type="file" id="file-input" accept=".json" style="display:none">
+                    </div>
+                </div>
+                <div class="hero-visual">
+                    <div class="floating-card card-bar">
+                        <div class="mini-bar">
+                            <div class="bar" style="height:60%"></div>
+                            <div class="bar" style="height:90%"></div>
+                            <div class="bar" style="height:45%"></div>
+                            <div class="bar" style="height:75%"></div>
+                        </div>
+                        <span>막대그래프</span>
+                    </div>
+                    <div class="floating-card card-pie">
+                        <div class="mini-pie"></div>
+                        <span>원그래프</span>
+                    </div>
+                    <div class="floating-card card-line">
+                        <svg viewBox="0 0 80 40" class="mini-line">
+                            <polyline points="5,35 20,20 40,28 55,10 75,18" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"/>
+                        </svg>
+                        <span>꺾은선그래프</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="steps-section">
+                <h3 class="section-title">🎯 이렇게 사용해요</h3>
+                <div class="steps-grid">
+                    <div class="step-card">
+                        <div class="step-num">1</div>
+                        <div class="step-icon">✏️</div>
+                        <h4>설문 만들기</h4>
+                        <p>주제를 정하고 선택지를 입력해요</p>
+                    </div>
+                    <div class="step-card">
+                        <div class="step-num">2</div>
+                        <div class="step-icon">🗳️</div>
+                        <h4>응답 모으기</h4>
+                        <p>친구들이 직접 투표하거나<br>결과를 입력해요</p>
+                    </div>
+                    <div class="step-card">
+                        <div class="step-num">3</div>
+                        <div class="step-icon">📊</div>
+                        <h4>그래프 만들기</h4>
+                        <p>5가지 그래프로<br>자동 변환!</p>
+                    </div>
+                    <div class="step-card">
+                        <div class="step-num">4</div>
+                        <div class="step-icon">🎤</div>
+                        <h4>발표하기</h4>
+                        <p>전체화면으로<br>멋지게 발표해요</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ========== 설문 만들기 페이지 ========== -->
+        <section id="page-create" class="page">
+            <div class="page-container">
+                <div class="page-header">
+                    <h2>✏️ 새 설문조사 만들기</h2>
+                    <p>설문 주제를 정하고, 선택지를 입력하세요!</p>
+                </div>
+                <div class="create-form">
+                    <div class="form-group">
+                        <label for="survey-title">📌 설문 제목</label>
+                        <input type="text" id="survey-title" placeholder="예: 우리 반 친구들이 좋아하는 계절은?" maxlength="50">
+                        <div class="char-count"><span id="title-count">0</span>/50</div>
+                    </div>
+                    <div class="form-group">
+                        <label for="survey-author">👤 조사자 이름</label>
+                        <input type="text" id="survey-author" placeholder="예: 김민수" maxlength="20">
+                    </div>
+                    <div class="form-group">
+                        <label>📝 선택지 (2~8개)</label>
+                        <div id="options-container">
+                            <div class="option-row">
+                                <span class="option-num">1</span>
+                                <input type="text" class="option-input" placeholder="선택지 1" maxlength="20">
+                                <button class="btn-icon btn-remove-option" title="삭제" disabled>✕</button>
+                            </div>
+                            <div class="option-row">
+                                <span class="option-num">2</span>
+                                <input type="text" class="option-input" placeholder="선택지 2" maxlength="20">
+                                <button class="btn-icon btn-remove-option" title="삭제" disabled>✕</button>
+                            </div>
+                        </div>
+                        <button class="btn btn-ghost" id="btn-add-option">
+                            <span>+ 선택지 추가</span>
+                        </button>
+                    </div>
+                    <div class="form-actions">
+                        <button class="btn btn-primary btn-lg" id="btn-create-survey">
+                            <span>🚀 설문 만들기</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ========== 내 설문 목록 페이지 ========== -->
+        <section id="page-mysurveys" class="page">
+            <div class="page-container">
+                <div class="page-header">
+                    <h2>📋 내 설문 목록</h2>
+                    <p>만들어둔 설문조사를 확인하고 관리하세요</p>
+                </div>
+                <div id="surveys-list" class="surveys-list">
+                    <!-- JS로 동적 생성 -->
+                </div>
+                <div id="empty-state" class="empty-state">
+                    <div class="empty-icon">📭</div>
+                    <h3>아직 설문이 없어요</h3>
+                    <p>새 설문을 만들어 보세요!</p>
+                    <button class="btn btn-primary" id="btn-empty-create">✏️ 설문 만들기</button>
+                </div>
+            </div>
+        </section>
+
+        <!-- ========== 설문 응답 페이지 ========== -->
+        <section id="page-vote" class="page">
+            <div class="page-container">
+                <div class="page-header">
+                    <h2 id="vote-title">설문 제목</h2>
+                    <p id="vote-subtitle">조사자: <span id="vote-author"></span></p>
+                </div>
+                <div class="vote-mode-tabs">
+                    <button class="tab-btn active" data-mode="click" id="tab-click-vote">🖱️ 클릭 투표</button>
+                    <button class="tab-btn" data-mode="manual" id="tab-manual-input">✍️ 직접 입력</button>
+                </div>
+
+                <!-- 클릭 투표 모드 -->
+                <div id="vote-click-mode" class="vote-mode active">
+                    <div class="vote-info">
+                        <span class="vote-total">총 응답: <strong id="vote-count">0</strong>명</span>
+                        <button class="btn btn-ghost btn-sm" id="btn-reset-votes">🔄 초기화</button>
+                    </div>
+                    <div id="vote-buttons" class="vote-buttons">
+                        <!-- JS로 동적 생성 -->
+                    </div>
+                    <div class="vote-live-bar" id="vote-live-bar">
+                        <!-- 실시간 막대 -->
+                    </div>
+                </div>
+
+                <!-- 직접 입력 모드 -->
+                <div id="vote-manual-mode" class="vote-mode">
+                    <div class="manual-inputs" id="manual-inputs">
+                        <!-- JS로 동적 생성 -->
+                    </div>
+                    <button class="btn btn-primary" id="btn-apply-manual">✅ 입력값 적용</button>
+                </div>
+
+                <div class="vote-actions">
+                    <button class="btn btn-primary btn-lg" id="btn-go-graphs">
+                        <span>📊 그래프 보기</span>
+                    </button>
+                    <button class="btn btn-secondary" id="btn-save-survey">
+                        <span>💾 저장하기</span>
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <!-- ========== 그래프 보기 페이지 ========== -->
+        <section id="page-graphs" class="page">
+            <div class="page-container wide">
+                <div class="page-header">
+                    <h2 id="graph-title">📊 그래프 결과</h2>
+                    <p id="graph-subtitle"></p>
+                </div>
+
+                <div class="graph-tabs">
+                    <button class="graph-tab active" data-graph="bar" id="tab-bar">📊 막대그래프</button>
+                    <button class="graph-tab" data-graph="pie" id="tab-pie">🥧 원그래프</button>
+                    <button class="graph-tab" data-graph="band" id="tab-band">📏 띠그래프</button>
+                    <button class="graph-tab" data-graph="line" id="tab-line">📈 꺾은선그래프</button>
+                    <button class="graph-tab" data-graph="pictograph" id="tab-pictograph">🖼️ 그림그래프</button>
+                </div>
+
+                <div class="mode-toggle">
+                    <button class="mode-btn active" data-mode="build" id="mode-build">📐 직접 그리기</button>
+                    <button class="mode-btn" data-mode="auto" id="mode-auto">👀 정답 확인</button>
+                </div>
+
+                <!-- 직접 그리기 모드 -->
+                <div id="builder-display" class="builder-display">
+                    <div id="builder-container" class="builder-container"></div>
+
+                </div>
+
+                <!-- 정답 확인 모드 (자동 그래프) -->
+                <div class="graph-display" id="auto-display" style="display:none">
+                    <div id="chart-container" class="chart-container">
+                        <canvas id="main-chart"></canvas>
+                    </div>
+                    <div id="band-chart-container" class="chart-container" style="display:none">
+                        <div id="band-chart" class="band-chart"></div>
+                    </div>
+                    <div id="pictograph-container" class="chart-container" style="display:none">
+                        <div id="pictograph-chart" class="pictograph-chart"></div>
+                    </div>
+                </div>
+
+                <!-- 데이터 요약 테이블 -->
+                <div class="data-summary">
+                    <h3>📋 데이터 요약</h3>
+                    <table id="data-table" class="data-table">
+                        <thead>
+                            <tr>
+                                <th>항목</th>
+                                <th>응답 수 (명)</th>
+                                <th>백분율 (%)</th>
+                            </tr>
+                        </thead>
+                        <tbody id="data-table-body">
+                        </tbody>
+                        <tfoot>
+                            <tr>
+                                <td><strong>합계</strong></td>
+                                <td id="data-total"><strong>0</strong></td>
+                                <td><strong>100%</strong></td>
+                            </tr>
+                        </tfoot>
+                    </table>
+                </div>
+
+                <div class="graph-actions">
+                    <button class="btn btn-primary btn-lg" id="btn-present">
+                        <span>🎤 발표 모드</span>
+                    </button>
+                    <button class="btn btn-secondary" id="btn-back-vote">
+                        <span>🗳️ 응답 수정</span>
+                    </button>
+                    <button class="btn btn-secondary" id="btn-download">
+                        <span>📥 이미지 저장</span>
+                    </button>
+                    <button class="btn btn-secondary" id="btn-save-file">
+                        <span>💾 파일 저장</span>
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <!-- ========== 발표 모드 ========== -->
+        <section id="page-present" class="page present-mode">
+            <div class="present-header">
+                <h2 id="present-title"></h2>
+                <p id="present-author"></p>
+            </div>
+            <div class="present-chart-container">
+                <canvas id="present-chart"></canvas>
+                <div id="present-band-chart" class="band-chart" style="display:none"></div>
+                <div id="present-pictograph-chart" class="pictograph-chart" style="display:none"></div>
+            </div>
+            <div class="present-controls">
+                <button class="present-btn" id="present-prev" title="이전 그래프">◀</button>
+                <span class="present-indicator" id="present-indicator"></span>
+                <button class="present-btn" id="present-next" title="다음 그래프">▶</button>
+                <button class="present-btn present-exit" id="present-exit" title="나가기">✕</button>
+            </div>
+            <div class="present-table-container">
+                <table id="present-data-table" class="data-table present-table">
+                    <thead>
+                        <tr>
+                            <th>항목</th>
+                            <th>응답 수 (명)</th>
+                            <th>백분율 (%)</th>
+                        </tr>
+                    </thead>
+                    <tbody id="present-data-table-body">
+                    </tbody>
+                </table>
+            </div>
+        </section>
+    </main>
+
+    <!-- 토스트 알림 -->
+    <div id="toast-container" class="toast-container"></div>
+
+    <script src="builder.js"></script>
+    <script src="app.js"></script>
+</body>
+</html>
