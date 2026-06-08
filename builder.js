@@ -26,6 +26,13 @@ const Builder = {
         const c = old.cloneNode(false);
         old.parentNode.replaceChild(c, old);
 
+        // 데이터 요약 테이블의 백분율 숨김 해제 (기본값)
+        document.querySelectorAll('#data-table-body tr td:nth-child(3)').forEach(td => {
+            td.style.filter = 'none';
+            td.style.userSelect = 'auto';
+            td.title = '';
+        });
+
         if (type === 'bar') this.buildBar(c);
         else if (type === 'pie' || type === 'band') this.buildPercent(c, type);
         else if (type === 'line') this.buildLine(c);
@@ -370,6 +377,20 @@ const Builder = {
                         }
                     }
                 }
+
+                // 5) 데이터 요약 테이블의 백분율 숨김 처리 (제출 전)
+                const pctCells = document.querySelectorAll('#data-table-body tr td:nth-child(3)');
+                pctCells.forEach(td => {
+                    if (!self.isSubmitted) {
+                        td.style.filter = 'blur(5px)';
+                        td.style.userSelect = 'none';
+                        td.title = '제출 후 공개됩니다';
+                    } else {
+                        td.style.filter = 'none';
+                        td.style.userSelect = 'auto';
+                        td.title = '';
+                    }
+                });
             }
         };
 
