@@ -15,6 +15,8 @@ const Builder = {
         this.values = new Array(survey.options.length).fill(0);
         this.isDragging = false;
         this.dragIdx = -1;
+        this.hasInteracted = false;
+        this.isSubmitted = false;
         if (!this.docListenerAdded) {
             document.addEventListener('mouseup', () => this.isDragging = false);
             document.addEventListener('touchend', () => this.isDragging = false);
@@ -35,6 +37,38 @@ const Builder = {
         else if (type === 'pie' || type === 'band') this.buildPercent(c, type);
         else if (type === 'line') this.buildLine(c);
         else if (type === 'pictograph') this.buildPicto(c);
+
+        // 정답 확인 버튼과 연동하기 위한 공통 제출 버튼 추가 (원/띠그래프 제외)
+        if (type === 'bar' || type === 'line' || type === 'pictograph') {
+            const btnHtml = `<div style="text-align:center; margin-top:30px; margin-bottom: 20px;" id="general-submit-container">
+                <button class="btn btn-primary btn-lg" id="btn-submit-graph-general">✅ 내가 그린 그래프 제출하기</button>
+            </div>`;
+            c.insertAdjacentHTML('beforeend', btnHtml);
+            
+            c.querySelector('#btn-submit-graph-general').addEventListener('click', (e) => {
+                if (!this.hasInteracted) {
+                    if (typeof toast === 'function') toast('먼저 그래프를 직접 그려보세요!', 'error');
+                    else alert('먼저 그래프를 직접 그려보세요!');
+                    return;
+                }
+                this.isSubmitted = true;
+                e.target.parentElement.innerHTML = `<button class="btn btn-secondary btn-lg" id="btn-retry-graph-general">🔄 다시 그려보기</button>`;
+                
+                c.querySelector('#btn-retry-graph-general').addEventListener('click', () => {
+                    this.isSubmitted = false;
+                    this.init(this.survey, this.currentType);
+                });
+
+                if (typeof updateDataTableBlur === 'function') {
+                    updateDataTableBlur();
+                }
+                
+                // 알림 띄우기 (toast)
+                if (typeof toast === 'function') {
+                    toast('제출되었습니다! 정답을 확인해보세요.', 'success');
+                }
+            });
+        }
     },
 
     /* ===== BAR CHART BUILDER ===== */
@@ -118,7 +152,7 @@ const Builder = {
         container.innerHTML = h;
 
         const self = this;
-        const setVal = (idx, y) => { self.values[idx] = y; self.updateBar(c, idx); };
+        const setVal = (idx, y) => { self.hasInteracted = true; self.values[idx] = y; self.updateBar(c, idx); };
         const grid = c.querySelector('.bb-cols');
         
         grid.addEventListener('mousedown', e => {
@@ -389,6 +423,7 @@ const Builder = {
 
         const onStart = (e) => {
             if (self.isSubmitted) return; // 제출된 상태에서는 드래그 금지
+            self.hasInteracted = true;
             const handle = e.target.closest(type === 'band' ? '.band-handle' : '.pie-handle');
             if (handle) {
                 isDragging = true;
@@ -435,6 +470,11 @@ const Builder = {
         // 제출 및 다시시도 버튼 클릭 리스너 (위임)
         c.addEventListener('click', (e) => {
             if (e.target.id === 'btn-submit-graph') {
+                if (!self.hasInteracted) {
+                    if (typeof toast === 'function') toast('먼저 그래프를 직접 그려보세요!', 'error');
+                    else alert('먼저 그래프를 직접 그려보세요!');
+                    return;
+                }
                 self.isSubmitted = true;
                 updateUI();
             } else if (e.target.id === 'btn-retry-graph') {
@@ -568,6 +608,7 @@ const Builder = {
                 cell.title = `${y}${yUnit} 클릭하여 선택`;
             });
             cell.addEventListener('click', () => {
+                self.hasInteracted = true;
                 const i = +cell.dataset.i, y = +cell.dataset.y;
                 self.values[i] = (self.values[i] === y) ? 0 : y;
                 // update visual
@@ -752,16 +793,16 @@ const Builder = {
 
         const self = this;
         rows.querySelectorAll('.picto-big-plus').forEach(btn => {
-            btn.addEventListener('click', () => { self.values[+btn.dataset.i].big++; self.renderPictoRows(c); });
+            btn.addEventListener('click', () => { self.hasInteracted = true; self.values[+btn.dataset.i].big++; self.renderPictoRows(c); });
         });
         rows.querySelectorAll('.picto-big-minus').forEach(btn => {
-            btn.addEventListener('click', () => { const i=+btn.dataset.i; if(self.values[i].big>0) self.values[i].big--; self.renderPictoRows(c); });
+            btn.addEventListener('click', () => { self.hasInteracted = true; const i=+btn.dataset.i; if(self.values[i].big>0) self.values[i].big--; self.renderPictoRows(c); });
         });
         rows.querySelectorAll('.picto-small-plus').forEach(btn => {
-            btn.addEventListener('click', () => { self.values[+btn.dataset.i].small++; self.renderPictoRows(c); });
+            btn.addEventListener('click', () => { self.hasInteracted = true; self.values[+btn.dataset.i].small++; self.renderPictoRows(c); });
         });
         rows.querySelectorAll('.picto-small-minus').forEach(btn => {
-            btn.addEventListener('click', () => { const i=+btn.dataset.i; if(self.values[i].small>0) self.values[i].small--; self.renderPictoRows(c); });
+            btn.addEventListener('click', () => { self.hasInteracted = true; const i=+btn.dataset.i; if(self.values[i].small>0) self.values[i].small--; self.renderPictoRows(c); });
         });
     },
 
