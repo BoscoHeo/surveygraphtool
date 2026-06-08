@@ -35,6 +35,33 @@ const Builder = {
         else if (type === 'pie' || type === 'band') this.buildPercent(c, type);
         else if (type === 'line') this.buildLine(c);
         else if (type === 'pictograph') this.buildPicto(c);
+
+        // 정답 확인 버튼과 연동하기 위한 공통 제출 버튼 추가 (원/띠그래프 제외)
+        if (type === 'bar' || type === 'line' || type === 'pictograph') {
+            const btnHtml = `<div style="text-align:center; margin-top:30px; margin-bottom: 20px;" id="general-submit-container">
+                <button class="btn btn-primary btn-lg" id="btn-submit-graph-general">✅ 내가 그린 그래프 제출하기</button>
+            </div>`;
+            c.insertAdjacentHTML('beforeend', btnHtml);
+            
+            c.querySelector('#btn-submit-graph-general').addEventListener('click', (e) => {
+                this.isSubmitted = true;
+                e.target.parentElement.innerHTML = `<button class="btn btn-secondary btn-lg" id="btn-retry-graph-general">🔄 다시 그려보기</button>`;
+                
+                c.querySelector('#btn-retry-graph-general').addEventListener('click', () => {
+                    this.isSubmitted = false;
+                    this.init(this.survey, this.currentType);
+                });
+
+                if (typeof updateDataTableBlur === 'function') {
+                    updateDataTableBlur();
+                }
+                
+                // 알림 띄우기 (toast)
+                if (typeof toast === 'function') {
+                    toast('제출되었습니다! 정답을 확인해보세요.', 'success');
+                }
+            });
+        }
     },
 
     /* ===== BAR CHART BUILDER ===== */
