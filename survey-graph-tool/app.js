@@ -379,16 +379,6 @@ function updateDataTableBlur() {
             td.title = '';
         }
     });
-
-    // 정답 확인 버튼 숨김 처리
-    const modeAutoBtn = document.getElementById('mode-auto');
-    if (modeAutoBtn) {
-        if (isBuild && !isSubmitted) {
-            modeAutoBtn.style.display = 'none';
-        } else {
-            modeAutoBtn.style.display = 'inline-block';
-        }
-    }
 }
 
 function switchGraph(type) {
