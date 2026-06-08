@@ -26,6 +26,11 @@ const Builder = {
         const c = old.cloneNode(false);
         old.parentNode.replaceChild(c, old);
 
+        // 데이터 요약 테이블의 백분율 상태 갱신
+        if (typeof updateDataTableBlur === 'function') {
+            updateDataTableBlur();
+        }
+
         if (type === 'bar') this.buildBar(c);
         else if (type === 'pie' || type === 'band') this.buildPercent(c, type);
         else if (type === 'line') this.buildLine(c);
@@ -369,6 +374,11 @@ const Builder = {
                             actionsContainer.innerHTML = `<button class="btn btn-secondary btn-lg" id="btn-retry-graph">🔄 다시 그려보기</button>`;
                         }
                     }
+                }
+
+                // 5) 데이터 요약 테이블의 백분율 숨김 처리 (제출 전)
+                if (typeof updateDataTableBlur === 'function') {
+                    updateDataTableBlur();
                 }
             }
         };
